@@ -1,0 +1,10 @@
+#!/usr/local/bin/gnuplot
+fileName="output_new.txt"
+set title fileName
+column=system("echo $column")
+plot fileName using 1:25 with linespoints title "chi2 ",\
+	 fileName using 1:26 with linespoints title "srcR", \
+	 fileName using 1:27 with linespoints title "penalty ", \
+	 #fileName using 2:30 with linespoints title "cubic order "
+pause -1
+EOF

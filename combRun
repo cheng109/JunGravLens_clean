@@ -1,0 +1,6 @@
+./junGL horseshoe_test/ testConf_0.txt output_testConf_0.txt &
+./junGL horseshoe_test/ testConf_1.txt output_testConf_1.txt &
+./junGL horseshoe_test/ testConf_2.txt output_testConf_2.txt &
+./junGL horseshoe_test/ testConf_3.txt output_testConf_3.txt &
+./junGL horseshoe_test/ testConf_4.txt output_testConf_4.txt &
+./junGL horseshoe_test/ testConf_5.txt output_testConf_5.txt &

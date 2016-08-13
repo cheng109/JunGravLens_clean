@@ -1,0 +1,4 @@
+input,s,a,'HorseShoe_large.fits[360:446,7:77]',,,'Input images'
+output,s,a,'background_piece.fits',,,'Output images or directory'
+verbose,b,h,yes,,,'Print operations performed?'
+mode,s,h,'ql'
