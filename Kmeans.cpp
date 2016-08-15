@@ -14,7 +14,7 @@ Kmeans::Kmeans(int _k, vector<double>& _xPos, vector<double>& _yPos, vector<int>
 			centers[i] = {_xPos[i], _yPos[i]};  		
 	}
 
-void Kmeans::initiate() {   // only valid for k = 2; 
+void Kmeans::initiate() {  
 		double xSmallest = INT_MAX; 
 		double xLargest = INT_MIN; 
 		for(int i=0; i<n; ++i) {

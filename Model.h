@@ -15,6 +15,7 @@
 #include <Eigen/Sparse>
 #include <fstream>
 #include <sstream>
+#include <utility> 
 //#include <boost/algorithm/string.hpp>
 #define NUM_PTMASS_PARAM 	3
 #define NUM_SIE_PARAM 		5
@@ -129,6 +130,8 @@ public:
 
 	double occupation; 
 
+	double beta;   // weight for compactness, vs smoothness; 
+
 	MultModelParam param;
 
 	vector<double> srcPosXList;	  // Source position after deflection in X direction, in arcsec;
@@ -137,7 +140,8 @@ public:
 	vector<double> srcPosXListPixel;	  // Source position after deflection in X direction, in pixel;
 	vector<double> srcPosYListPixel;	  // Source position after deflection in Y direction, in pixel;
 
-	vector<int> group; 
+	vector<int> Kmeans_group; 
+	vector<pair<double,double>> Kmeans_centers;
 
 
 	vector<double> srcPosXListPixel_increase; 
@@ -197,6 +201,8 @@ public:
 
 	sp_mat Hphi;
 	sp_mat HtH;
+	sp_mat HcH; 
+
 	sp_mat HphiH;
 	sp_mat T;
 
@@ -245,6 +251,7 @@ public:
 	void updateSource(Conf* conf); 
 	void Logging(Image* dataImage, Conf* conList, string outFileName);
 	void updateRegularMatrix();
+	void updateCompactMatrix(Image* dataImage);
 	void solveSource( sp_mat* invC, vec* d, string R_type);
 
 	void writeSrcImage(string outFileName, Conf* conList);

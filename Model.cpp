@@ -40,7 +40,10 @@ using namespace nanoflann;
 Model::Model(Conf* conf, MultModelParam param, double lambdaS):
 		length(conf->length),
 		k(conf->numSources),
+		Kmeans_group(conf->length, 0),
+		Kmeans_centers(conf->numSources), 
 		param(param),
+		beta(conf->beta),
 		mod_img(length),
 		L(length,length),
 		r(2*length),
@@ -58,6 +61,7 @@ Model::Model(Conf* conf, MultModelParam param, double lambdaS):
 		H0H(length, length),
 		Hphi(length, length),
 		HtH(length, length),
+		HcH(length, length),
 		HphiH(length, length),
 		T(conf->srcSize[0]*conf->srcSize[1], length),
 		RtR(2*length, 2*length),
@@ -343,15 +347,12 @@ void Model::updatePosMapping(Image* image, Conf* conf) {
 
 		srcPos = getDeflectionAngle(conf,pfX, pfY, &defX, &defY, &param);
 
-		//if(i< 10) cout << defX << "\t" << defY << "\t"; 
-
 		pDeltaX.push_back(defX);
 		pDeltaY.push_back(defY);
 		srcPosXList.push_back(srcPos[0]);
 		srcPosYList.push_back(srcPos[1]);
 		srcPosXListPixel.push_back(srcPos[0]/conf->srcRes+conf->srcXCenter);
 		srcPosYListPixel.push_back(srcPos[1]/conf->srcRes+conf->srcYCenter);
-		group.push_back(0); 
 		posMap[make_pair(imgX, imgY)] = i;
 	}
 
@@ -388,9 +389,6 @@ void Model::update_H_grad(Conf* conf) {
 
 	int src_length = conf->srcSize[0]*conf->srcSize[1]; 
 	//sp_mat_row Hessian_grad(src_length, src_length); 
-	
-
-	clock_t begin = clock();
 
 	for(int i=0; i<src_length; ++i) {
 		int y = i/conf->srcSize[0]; 
@@ -407,10 +405,7 @@ void Model::update_H_grad(Conf* conf) {
 
 		}
 		Hessian_grad.insert(i, i) = 4; 
-	}
-
-	//Hessian_grad = H_zero.transpose() * Hessian_grad * H_zero; 
-	//cout << "Time_test: " << double(clock()-begin)/CLOCKS_PER_SEC << endl;
+	}	
 }
 
 
@@ -496,9 +491,7 @@ void Model::updateGradient(Image* dataImage) {
 
 
 void Model::updateVegettiRegularization() {
-	clock_t begin; 
-	double time =0; 
-	double time1 = 0; 
+	
 	vector<double> w5;
 	// vector<TriData> TriDataListX ; 
 
@@ -512,7 +505,6 @@ void Model::updateVegettiRegularization() {
 	// 		return left.srcY < right.srcY; }); 
 
 	// Build cloud; 
-	begin = clock(); 
 	
 	PointCloud<double> cloud; 
 	 cloud.pts.resize(length); 
@@ -606,7 +598,7 @@ void Model::updateVegettiRegularization() {
 	}
 	
 
-	if(1) {
+	if(1) {  // naive vegetti way to solve the problem; 
 
 	for (int i=0; i<length; ++i) {
 		
@@ -669,16 +661,57 @@ void Model::updateVegettiRegularization() {
 		}
 	}
 }
-	//cout << "counter: " << counter << "/" << length << endl; 
-	//time = clock() - begin; 
-	
-
-	//cout << "Build triplet :    " << double(time1)/CLOCKS_PER_SEC  << endl;
-	//cout << "Vegetti time used: " << double(time)/CLOCKS_PER_SEC  << endl;
 
 	HtH = Hs1.transpose()*Hs1 + Hs2.transpose()*Hs2;
 
 	 
+}
+
+
+
+void Model::updateCompactMatrix(Image* dataImage) {
+	// update CompactMatrix HcH; 
+	
+	//Suppose we know the 'srcPosXListPixel' and 'srcPosYListPixel': 
+
+
+	//vector<double> w(srcPosXListPixel.size(), 1); 
+	vector<double> w = dataImage->dataList; 
+	Kmeans kmeans(k, srcPosXListPixel, srcPosYListPixel, Kmeans_group, w); 
+	kmeans.initiate(); 
+	
+	// using the weight to partition the source images; 
+
+	double diff = INT_MAX;
+	vector<pair<double, double>> pre_centers ; 
+	int iterNum = 0; 
+	while( diff > 1.0e-6  && iterNum < 20 ) {  // unit pixel; 
+		iterNum ++; 
+		kmeans.updateGroup(); 
+		vector<int> count = kmeans.countGroup(); 
+		pre_centers = kmeans.centers; 
+		kmeans.updateCenters(); 
+		diff = 0; 
+		for(int i=0; i<k; ++i) {
+			double xdiff = pre_centers[i].first - kmeans.centers[i].first; 
+			double ydiff = pre_centers[i].second -kmeans.centers[i].second; 
+			diff += (xdiff * xdiff + ydiff * ydiff );  
+		}
+	}
+
+	// Now the centers are found; 
+	vector<int> countGroup  = kmeans.countGroup();   // countGroup.size() == k; 
+
+	// save group and cetners information; 
+	Kmeans_group = kmeans.group; 
+	Kmeans_centers = kmeans.centers; 
+
+	//getKmeansScatter(dataImage);   // Kmeans_group, Kmeans_center; 
+	for(int i=0; i<length; ++i) {
+		double xdiff = srcPosXListPixel[i] - Kmeans_centers[Kmeans_group[i]].first; 
+		double ydiff = srcPosYListPixel[i] - Kmeans_centers[Kmeans_group[i]].second; 
+		HcH.insert(i, i) = xdiff * xdiff + ydiff * ydiff ; 
+	}
 }
 
 void Model::Logging(Image* dataImage, Conf* conList, string outFileName) {
@@ -705,6 +738,7 @@ void Model::Logging(Image* dataImage, Conf* conList, string outFileName) {
 
 void Model::solveSource(sp_mat* invC, vec* d , string R_type) {
 
+	//cout << "Beta: " <<  beta << endl; 
 	if (R_type == "zero") 
 		REG = H_zero.transpose()*H_zero; 
 	else if(R_type == "grad")
@@ -712,7 +746,7 @@ void Model::solveSource(sp_mat* invC, vec* d , string R_type) {
 
 	else if(R_type == "vege")  {
 		updateVegettiRegularization(); 
-		REG = HtH ; 
+		REG = HtH + beta * HcH ; 
 	}
 	else {
 		cout << "Regularization type is not supported yet!" << endl; 
@@ -803,7 +837,7 @@ double Model::getKmeansScatter(Image* dataImage) {
 
 	//vector<double> w(srcPosXListPixel.size(), 1); 
 	vector<double> w = dataImage->dataList; 
-	Kmeans kmeans(k, srcPosXListPixel, srcPosYListPixel, group, w); 
+	Kmeans kmeans(k, srcPosXListPixel, srcPosYListPixel, Kmeans_group, w); 
 	kmeans.initiate(); 
 	
 	// using the weight to partition the source images; 
@@ -825,10 +859,12 @@ double Model::getKmeansScatter(Image* dataImage) {
 		}
 	}
 
-	//cout << "Time1: " << double(clock() - begin)/ CLOCKS_PER_SEC << endl; 
-	//begin = clock(); 
 	// Now the centers are found; 
-	vector<int> countGroup  = kmeans.countGroup(); 
+	vector<int> countGroup  = kmeans.countGroup();   // countGroup.size() == k; 
+
+	// save group and cetners information; 
+	Kmeans_group = kmeans.group; 
+	Kmeans_centers = kmeans.centers; 
 
 
 
@@ -1729,6 +1765,7 @@ void Model::resetVectors(Conf* conf) {
 	Dphi.	setZero(); 
 	Hs1.	setZero(); 
 	Hs2.	setZero(); 
+	HcH. 	setZero(); 
 	Hphi.	setZero(); 
 	HphiH.	setZero(); 
 	T.		setZero(); 
@@ -1766,6 +1803,7 @@ void Model::resetVectors(Conf* conf) {
 	
 	Hs1. reserve(Eigen::VectorXi::Constant(length,10));
 	Hs2. reserve(Eigen::VectorXi::Constant(length,10));
+	HcH. reserve(Eigen::VectorXi::Constant(length,1 )); 
 	RtR. reserve(200*length);
 	T.   reserve(length);
 
@@ -2205,7 +2243,7 @@ void writeSrcModResImage(Model* model, Image* dataImage, Conf* conf, string file
 	vector<double> s1(s.size(), 0); 
 	for(int i=0; i<s.size(); ++i) {
 		for(int j=0; j<k; ++j) {
-			if(model->group[i]==j) 
+			if(model->Kmeans_group[i]==j) 
 				sList[j][i] = s[i]; 
 			
 		}

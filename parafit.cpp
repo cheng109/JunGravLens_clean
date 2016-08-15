@@ -176,117 +176,17 @@ void gridSearchVegetti(Conf* conf, MultModelParam param_old, vector<Image*> data
 
 }
 
-		// for(int j=0; j<model->param.nLens; ++j) {   // max of j is 3; 
-		// 	SingleModelParam s; 
-		// 	s.name = model->param.mixAllModels[i][j].name; 	
-
-
-		// 	if(s.name=="PTMASS") {			
-		// 		s.critRad = model->param.mixAllModels[i][j].paraList[0]; 
-		// 		s.centerX = model->param.mixAllModels[i][j].paraList[1]; 
-		// 		s.centerY = model->param.mixAllModels[i][j].paraList[2]; 
-		// 		model->param.parameter.push_back(s); 
-		// 	}
-		// 	if(s.name=="SIE") {
-		// 		s.critRad = model->param.mixAllModels[i][j].paraList[0]; 
-		// 		s.centerX = model->param.mixAllModels[i][j].paraList[1]; 
-		// 		s.centerY = model->param.mixAllModels[i][j].paraList[2]; 
-		// 		s.e       = model->param.mixAllModels[i][j].paraList[3]; 
-		// 		s.PA 	  = model->param.mixAllModels[i][j].paraList[4];
-		// 		s.core 	  = model->param.mixAllModels[i][j].paraList[5];  
-		// 		model->param.parameter.push_back(s); 
-		// 	}
-
-		// 	if(s.name=="NFW") {
-		// 		s.massScale = model->param.mixAllModels[i][j].paraList[0]; 
-		// 		s.centerX   = model->param.mixAllModels[i][j].paraList[1]; 
-		// 		s.centerY   = model->param.mixAllModels[i][j].paraList[2]; 
-		// 		s.e         = model->param.mixAllModels[i][j].paraList[3]; 
-		// 		s.PA 	    = model->param.mixAllModels[i][j].paraList[4];
-		// 		s.radScale  = model->param.mixAllModels[i][j].paraList[5];  
-		// 		model->param.parameter.push_back(s); 
-		// 	}
-
-		// 	if(s.name=="SPEMD") {
-		// 		s.critRad = model->param.mixAllModels[i][j].paraList[0]; 
-		// 		s.centerX = model->param.mixAllModels[i][j].paraList[1]; 
-		// 		s.centerY = model->param.mixAllModels[i][j].paraList[2]; 
-		// 		s.e       = model->param.mixAllModels[i][j].paraList[3]; 
-		// 		s.PA 	  = model->param.mixAllModels[i][j].paraList[4];
-		// 		s.core 	  = model->param.mixAllModels[i][j].paraList[5]; 
-		// 		s.power	  = model->param.mixAllModels[i][j].paraList[6]; 
-		// 		model->param.parameter.push_back(s); 
-		// 	}
-
-		// }	
-
-
-	// 	double sum = 0 ; 
-	// 	for(auto & dataImage: dataImageList) {
-	// 		conf->length = dataImage->length; 
-	// 		sum += getPenalty(model,  dataImage, conf)[2] ; 
-
-	// 	}
-
-		
-		
-	// 	//cout << "sum : " << penalty1[2] << endl; 
-
-	// 	if(minPenalty > sum) {
-	// 		minPenalty = sum; 
-	// 		minIndex = i; 
-	// 	}
-
-	// 	cout << "[" + to_string(i+1) + "/" + to_string(model->param.nComb) + "] " ; 
-		
-	// 	//cout <<"\t" << model->param.parameter[0].critRad << "\t" <<penalty[0] << "\t" << penalty[1] << "\t" << penalty[2] << "\t"; 
-		
-	// 	//writeSrcModResImage(model,dataImageList[0],conf, to_string(i), dir) ; 
-	// 	//output << model->param.printCurrentModels(i).at(0) << "\t" << penalty1[0] <<"\t" <<penalty1[1] << "\t" << sum  << endl; 
-	// 	cout << endl; 
-	// }
-
-	// cout << "************************\nThe best models : " << minPenalty << endl;
-	// cout << model->param.printCurrentModels(minIndex).at(1);
-	// cout << "************************\n" << endl;	
-
-	//output.close(); 
-
-	// clock_t end = clock(); 
-	// double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC; 
-	// cout << "Time used: " << elapsed_secs << " seconds. "<< endl; 
-
-// 	delete model;
-
-// }
-
-
 vector<double> getPenalty(Model* model, Image* dataImage, Conf* conf) {
 	int begin = clock(); 
 	vector<double> penalty(3); 
 	vec d = cV_to_eigenV (&dataImage->dataList); 
 	model->updatePosMapping(dataImage, conf);  // time used: 0.03s; 
-	
+	model->updateCompactMatrix(dataImage);  // 
+
 	if(1) {
 		model->update_H_zero(conf); 
 		model->updateLensAndRegularMatrix(dataImage, conf);  // get matrix 'L' and 'RTR'; most time consuming part; 
 		model->solveSource(&dataImage->invC, &dataImage->d, conf->srcRegType); 
-
-		//  /*modify source ; srcPosXListPixel ; */
-		double x0 = 49; 
-		double y0 = 57; 
-		double  a = 1.0e5; 
-		double  b = y0-x0*a; 
-		for(int i=0; i<model->srcPosXListPixel.size(); ++i) {
-			int x = model->srcPosXListPixel[i]; 
-			int y = model->srcPosYListPixel[i]; 
-			//if( y - (a*x + b) <= 0 ) {
-			if(x > x0) {
-				//model->s[i] = 0; 
-			
-			}
-		}
-
 
 		vec &s = model->s; 
 		vec res = ( model->L * s - dataImage->d) ; 

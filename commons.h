@@ -120,7 +120,7 @@ public:
 
 	long potN;
 	int bitpix;
-
+	double beta; 
 
 	string imageFileName; 
 	string criticalName; 

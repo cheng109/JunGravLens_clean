@@ -80,6 +80,7 @@ Conf::Conf(Image* dataImage, map<string, string> confMap) {
 
 
 		causticLevel  = stoi(confMap["causticLevel"]); 
+		beta = stod(confMap["beta"]); 
 
 		srcXCenter = srcSize[0]/2.0;
 		srcYCenter = srcSize[1]/2.0;
