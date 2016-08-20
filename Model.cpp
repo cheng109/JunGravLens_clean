@@ -435,6 +435,11 @@ void Model::updateLensAndRegularMatrix(Image* dataImage,  Conf* conf) {
 		}
 
 		if(dataImage->type[i]==0) {
+            left  = posMap.find(make_pair(dataImage->xList[i]-1, dataImage->yList[i]));
+            right = posMap.find(make_pair(dataImage->xList[i]+1, dataImage->yList[i]));
+            up    = posMap.find(make_pair(dataImage->xList[i], dataImage->yList[i]+1));
+            down  = posMap.find(make_pair(dataImage->xList[i], dataImage->yList[i]-1));
+
 			if(left!=posMap.end() && up!=posMap.end() && down!=posMap.end()) {
 				int iLeft = left->second;
 				int iUp   = up  ->second;
