@@ -2,12 +2,12 @@ WORK_DIR := $(shell pwd)
 CXX := g++
 FC 	:= gfortran
 INC := -I$(WORK_DIR)/lib/cfitsio -I$(WORK_DIR)/lib/eigen_include
-CXXFLAGS := -Wall -O3 -g -std=c++11 $(INC)
-LDFLAGS := -L. -L$(WORK_DIR)/lib/cfitsio -L/usr/local/gfortran/lib
+CXXFLAGS := -Wall -O3 -g -std=c++11 $(INC) -fopenmp
+LDFLAGS := -L. -L$(WORK_DIR)/lib/cfitsio -L/usr/local/gfortran/lib -fopenmp
 LDLIBS := -lcfitsio -lfortranstuff -lgfortran 
 #-lgsl -lgslcblas -lm -lfortranstuff
 
-SRCS := main.cpp Image.cpp commons.cpp Model.cpp parafit.cpp Kmeans.cpp
+SRCS := main.cpp Image.cpp commons.cpp Model.cpp parafit.cpp Kmeans.cpp parafit2.cpp mc.cpp
 OBJS := $(patsubst %.cpp, %.o, $(SRCS))
 
 ## ARG1:   working directory. 

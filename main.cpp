@@ -236,7 +236,10 @@ int main(int argc, char* argv[]) {
 
 	dataImageList.push_back(dataImage);
 	//dataImageList.push_back(dataImageSmall); 
-	gridSearchVegetti(conf, param,  dataImageList, dir, output);	
+	if (opt == 0)
+        gridSearchVegetti(conf, param,  dataImageList, dir, output);
+    else if (opt == 2)
+        mcFitGW(conf, param, dataImageList, dir, output);
 
 
 	delete conf;
