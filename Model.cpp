@@ -150,8 +150,13 @@ vector<double> Model::getDeflectionAngle(Conf* conf, double pfX, double pfY, dou
 			root1mq = sqrt(1.0-fq*fq);
 			phi = sqrt(fq*fq*(fCore*fCore + x1*x1) + y1*y1);
 			fac = param->parameter[i].critRad*sqrt(fq)/root1mq;
-			deltax1 = fac*atan(root1mq*x1/(phi + fCore));
-			deltay1 = fac*lm_arctanh(root1mq*y1/(phi+ fCore*fq*fq));
+            if (phi==0. && fCore==0.) {
+                deltax1 = 0.;
+                deltay1=0.;
+            } else {
+                deltax1 = fac*atan(root1mq*x1/(phi + fCore));
+                deltay1 = fac*lm_arctanh(root1mq*y1/(phi+ fCore*fq*fq));
+            }
 
 			//cout << root1mq << "\t" << y1 << "\t " << phi << "\t" << fq << "\t" << deltay1 << endl; 
 			*pDeltaX += (deltax1*fCosTheta - deltay1*fSinTheta);
