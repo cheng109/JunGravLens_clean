@@ -37,6 +37,7 @@ void mcFitGW(Conf* conf, MultModelParam param_old, vector<Image*> dataImageList,
 
     nLoops += iter;
     for (size_t loop=iter; loop<nLoops; ++loop) {
+        cout << loop << endl;
         #pragma omp parallel for
         for (size_t m=0; m<nWalkers; ++m) {
             mc.stretchMove(model,m);
@@ -87,6 +88,8 @@ double getLogProb(Model* model, Image* dataImage, Conf* conf) {
         cout << "Penalty NaN " << chi2[0] << " " << srcR[0] << endl;
         return -1.0;
     }
+    //cout << "Penalty " << chi2[0] << " " << srcR[0] << " " << s.norm() << " " << model->REG.norm() << " " << res.norm() << endl;
+    //cout << "Penalty " << model->L.norm() << " " << dataImage->d.norm() << " " << dataImage->invC.norm() << endl;
     return lp;
 
 }

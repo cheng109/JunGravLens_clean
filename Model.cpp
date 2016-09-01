@@ -1251,7 +1251,8 @@ MultModelParam::MultModelParam(map<string,string> confMap) {
 
 
 		// compute nComb; 
-		nComb = 0; 
+		nComb = 0;
+        /*
 		for (double critRad0 = parameter[0].critRadFrom;	critRad0 <= parameter[0].critRadTo; critRad0 += parameter[0].critRadInc) {
 	        for (double centerX0 = parameter[0].centerXFrom;	centerX0 <= parameter[0].centerXTo; centerX0 += parameter[0].centerXInc) {
 	        	for (double centerY0 = parameter[0].centerYFrom;	centerY0 <= parameter[0].centerYTo; centerY0 += parameter[0].centerYInc) {
@@ -1295,16 +1296,18 @@ MultModelParam::MultModelParam(map<string,string> confMap) {
 	        		}
 	        	}
 	        }
-	    }	
-		// for(int i=0; i<3; ++i) {
-		// 	nComb *= (floor(parameter[i].centerXTo-parameter[i].centerXFrom )/ parameter[i].centerXInc +1) ; 
-		// 	nComb *= (floor(parameter[i].centerYTo-parameter[i].centerYFrom )/ parameter[i].centerYInc +1); 
-		// 	nComb *= (floor(parameter[i].critRadTo-parameter[i].critRadFrom )/ parameter[i].critRadInc +1); 
-		// 	nComb *= (floor(parameter[i].eTo-parameter[i].eFrom)/ parameter[i].eInc +1); 
-		// 	nComb *= (floor(parameter[i].PATo-parameter[i].PAFrom )/ parameter[i].PAInc +1); 
-		// 	nComb *= (floor(parameter[i].coreTo-parameter[i].coreFrom )/ parameter[i].coreInc +1); 
+        } */
+        nComb = 1;
+		for(size_t i=0; i<parameter.size(); ++i) {
+			nComb *= (int((parameter[i].centerXTo-parameter[i].centerXFrom )/ parameter[i].centerXInc) +1);
+			nComb *= (int((parameter[i].centerYTo-parameter[i].centerYFrom )/ parameter[i].centerYInc) +1);
+			nComb *= (int((parameter[i].critRadTo-parameter[i].critRadFrom )/ parameter[i].critRadInc) +1);
+			nComb *= (int((parameter[i].eTo-parameter[i].eFrom)/ parameter[i].eInc) +1);
+			nComb *= (int((parameter[i].PATo-parameter[i].PAFrom )/ parameter[i].PAInc) +1);
+			nComb *= (int((parameter[i].coreTo-parameter[i].coreFrom )/ parameter[i].coreInc) +1);
 
-		// }		
+		}
+        cout << "nComb "<< nComb << endl;
 
 
 	}
@@ -1727,7 +1730,7 @@ void MultModelParam::mix(int opt) {
         }
     }
 	nComb = mixAllModels.size();
-    cout<< nComb<<" "<<ms1<<" "<<ms2<<" "<< mix[0].size()<<endl;
+    cout<< "nComb "<< nComb <<" "<<ms1<<" "<<ms2<<" "<< mix[0].size()<<endl;
 }
 
 
