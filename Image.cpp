@@ -496,7 +496,7 @@ sp_mat Image::getVarMatrix()  {
 	sp_mat invC(n, n);
 	invC.reserve(n);
 	for(int i=0; i<n; ++i) {
-		invC.insert(i,i)= 1.0; ///varList[i];
+		invC.insert(i,i)= 1.0/varList[i]; ///varList[i];
 		//cout << dataList[i] << endl;
 	}
 	return invC;

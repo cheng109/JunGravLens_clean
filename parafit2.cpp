@@ -84,12 +84,14 @@ double getLogProb(Model* model, Image* dataImage, Conf* conf) {
 
     //double chi2 = (res.cwiseProduct(dataImage->invSigma)).squaredNorm()*model->lambdaC* model->lambdaC;
     double lp = srcR[0] + chi2[0];
+    if (conf->verbose) {
+        cout << "Penalty " << chi2[0] << " " << srcR[0] << " " << s.norm() << " " << model->REG.norm() << " " << res.norm() << endl;
+        cout << model->L.norm() << " " << dataImage->d.norm() << " " << dataImage->invC.norm() << endl;
+    }
     if (std::isnan(lp)) {
         cout << "Penalty NaN " << chi2[0] << " " << srcR[0] << endl;
         return -1.0;
     }
-    //cout << "Penalty " << chi2[0] << " " << srcR[0] << " " << s.norm() << " " << model->REG.norm() << " " << res.norm() << endl;
-    //cout << "Penalty " << model->L.norm() << " " << dataImage->d.norm() << " " << dataImage->invC.norm() << endl;
     return lp;
 
 }
