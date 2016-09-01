@@ -1483,7 +1483,7 @@ void MultModelParam::mix(int opt) {
 	        			}
 	        		}
 	        	}
-            } else if (opt == 1) {
+            } else if (opt >= 1) {
                 mixModels sModel("PTMASS");
                 sModel.paraList[0] = 0.;
                 sModel.paraList[1] = 0.;
@@ -1535,7 +1535,7 @@ void MultModelParam::mix(int opt) {
 	        			}
 	        		}
 	        	}
-            } else if (opt == 1) {
+            } else if (opt >= 1) {
                 mixModels sModel("SIE");
                 sModel.paraList[0] = 0.;
                 sModel.paraList[1] = 0.;
@@ -1569,12 +1569,12 @@ void MultModelParam::mix(int opt) {
                 sModel.paraList[4] = parameter[i].PATo;
                 sModel.paraList[5] = parameter[i].coreTo;
                 v1.push_back(sModel);
-                sModel.paraList[0] = 0.1 * (parameter[i].critRadTo - parameter[i].critRadFrom);
-                sModel.paraList[1] = 0.1 * (parameter[i].centerXTo - parameter[i].centerXFrom);
-                sModel.paraList[2] = 0.1 * (parameter[i].centerYTo - parameter[i].centerYFrom);
-                sModel.paraList[3] = 0.1 * (parameter[i].eTo       - parameter[i].eFrom      );
-                sModel.paraList[4] = 0.1 * (parameter[i].PATo      - parameter[i].PAFrom     );
-                sModel.paraList[5] = 0.1 * (parameter[i].coreTo    - parameter[i].coreFrom   );
+                sModel.paraList[0] = parameter[i].critRadInc;
+                sModel.paraList[1] = parameter[i].centerXInc;
+                sModel.paraList[2] = parameter[i].centerYInc;
+                sModel.paraList[3] = parameter[i].eInc;
+                sModel.paraList[4] = parameter[i].PAInc;
+                sModel.paraList[5] = parameter[i].coreInc;
                 v1.push_back(sModel);
             }
 
@@ -1719,7 +1719,7 @@ void MultModelParam::mix(int opt) {
                 }
             }
         }
-    } else if (opt == 1) {
+    } else if (opt >= 1) {
         for(size_t j=0; j<mix[0].size(); ++j) {
             vector<mixModels> v2;
             for(int i=0; i<nLens; ++i) v2.push_back(mix[i][j]);
@@ -1824,58 +1824,41 @@ void Model::resetVectors(Conf* conf) {
 void Model::copyParam(Conf* conf, int i) {
     resetVectors(conf);
     for (int j=0; j<param.nLens; ++j) {
-        SingleModelParam s;
-        s.name = param.mixAllModels[i][j].name;
-        if (s.name=="PTMASS") {
-            s.critRad = param.mixAllModels[i][j].paraList[0];
-            s.centerX = param.mixAllModels[i][j].paraList[1];
-            s.centerY = param.mixAllModels[i][j].paraList[2];
-            param.parameter.push_back(s);
+        if (param.mixAllModels[i][j].name == "PTMASS") {
+            param.parameter[j].critRad = param.mixAllModels[i][j].paraList[0];
+            param.parameter[j].centerX = param.mixAllModels[i][j].paraList[1];
+            param.parameter[j].centerY = param.mixAllModels[i][j].paraList[2];
+        } else if (param.mixAllModels[i][j].name == "SIE") {
+            param.parameter[j].critRad = param.mixAllModels[i][j].paraList[0];
+            param.parameter[j].centerX = param.mixAllModels[i][j].paraList[1];
+            param.parameter[j].centerY = param.mixAllModels[i][j].paraList[2];
+            param.parameter[j].e       = param.mixAllModels[i][j].paraList[3];
+            param.parameter[j].PA      = param.mixAllModels[i][j].paraList[4];
+            param.parameter[j].core    = param.mixAllModels[i][j].paraList[5];
+        } else if (param.mixAllModels[i][j].name == "NFW") {
+            param.parameter[j].massScale = param.mixAllModels[i][j].paraList[0];
+            param.parameter[j].centerX   = param.mixAllModels[i][j].paraList[1];
+            param.parameter[j].centerY   = param.mixAllModels[i][j].paraList[2];
+            param.parameter[j].e         = param.mixAllModels[i][j].paraList[3];
+            param.parameter[j].PA        = param.mixAllModels[i][j].paraList[4];
+            param.parameter[j].radScale  = param.mixAllModels[i][j].paraList[5];
+        } else if (param.mixAllModels[i][j].name == "SERSIC") {
+            param.parameter[j].kap 	  		= param.mixAllModels[i][j].paraList[0];
+            param.parameter[j].centerX 		= param.mixAllModels[i][j].paraList[1];
+            param.parameter[j].centerY 		= param.mixAllModels[i][j].paraList[2];
+            param.parameter[j].e       		= param.mixAllModels[i][j].paraList[3];
+            param.parameter[j].PA      		= param.mixAllModels[i][j].paraList[4];
+            param.parameter[j].sersicScale  = param.mixAllModels[i][j].paraList[5];
+            param.parameter[j].m   			= param.mixAllModels[i][j].paraList[6];
+        } else if (param.mixAllModels[i][j].name == "SPEMD") {
+            param.parameter[j].critRad = param.mixAllModels[i][j].paraList[0];
+            param.parameter[j].centerX = param.mixAllModels[i][j].paraList[1];
+            param.parameter[j].centerY = param.mixAllModels[i][j].paraList[2];
+            param.parameter[j].e       = param.mixAllModels[i][j].paraList[3];
+            param.parameter[j].PA      = param.mixAllModels[i][j].paraList[4];
+            param.parameter[j].core    = param.mixAllModels[i][j].paraList[5];
+            param.parameter[j].power   = param.mixAllModels[i][j].paraList[6];
         }
-        else if (s.name=="SIE") {
-            s.critRad = param.mixAllModels[i][j].paraList[0];
-            s.centerX = param.mixAllModels[i][j].paraList[1];
-            s.centerY = param.mixAllModels[i][j].paraList[2];
-            s.e       = param.mixAllModels[i][j].paraList[3];
-            s.PA      = param.mixAllModels[i][j].paraList[4];
-            s.core    = param.mixAllModels[i][j].paraList[5];
-            param.parameter.push_back(s);
-        }
-        else if (s.name=="NFW") {
-            s.massScale = param.mixAllModels[i][j].paraList[0];
-            s.centerX   = param.mixAllModels[i][j].paraList[1];
-            s.centerY   = param.mixAllModels[i][j].paraList[2];
-            s.e         = param.mixAllModels[i][j].paraList[3];
-            s.PA        = param.mixAllModels[i][j].paraList[4];
-            s.radScale  = param.mixAllModels[i][j].paraList[5];
-            param.parameter.push_back(s);
-        }
-
-
-        else if (s.name=="SERSIC") {
-        	
-            s.kap 	  		= param.mixAllModels[i][j].paraList[0];
-            s.centerX 		= param.mixAllModels[i][j].paraList[1];
-            s.centerY 		= param.mixAllModels[i][j].paraList[2];
-            s.e       		= param.mixAllModels[i][j].paraList[3];
-            s.PA      		= param.mixAllModels[i][j].paraList[4];
-            s.sersicScale   = param.mixAllModels[i][j].paraList[5];
-            s.m   			= param.mixAllModels[i][j].paraList[6];
-            param.parameter.push_back(s);
-        }
-
-
-        else if (s.name=="SPEMD") {
-            s.critRad = param.mixAllModels[i][j].paraList[0];
-            s.centerX = param.mixAllModels[i][j].paraList[1];
-            s.centerY = param.mixAllModels[i][j].paraList[2];
-            s.e       = param.mixAllModels[i][j].paraList[3];
-            s.PA      = param.mixAllModels[i][j].paraList[4];
-            s.core    = param.mixAllModels[i][j].paraList[5];
-            s.power   = param.mixAllModels[i][j].paraList[6];
-            param.parameter.push_back(s);
-        }
-
     }
 }
 

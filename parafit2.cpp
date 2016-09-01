@@ -69,6 +69,7 @@ void mcFitGW(Conf* conf, MultModelParam param_old, vector<Image*> dataImageList,
 
 double getLogProb(Model* model, Image* dataImage, Conf* conf) {
 
+    model->copyParam(conf, 3);
     model->updatePosMapping(dataImage, conf);
     model->updateCompactMatrix(dataImage);
     model->update_H_zero(conf);
