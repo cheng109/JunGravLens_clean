@@ -434,7 +434,7 @@ void Model::updateLensAndRegularMatrix(Image* dataImage,  Conf* conf) {
 			L.insert(i,i)=1;
 		}
 
-		if(dataImage->type[i]==0) {
+        else if(dataImage->type[i]==0) {
             left  = posMap.find(make_pair(dataImage->xList[i]-1, dataImage->yList[i]));
             right = posMap.find(make_pair(dataImage->xList[i]+1, dataImage->yList[i]));
             up    = posMap.find(make_pair(dataImage->xList[i], dataImage->yList[i]+1));
@@ -511,75 +511,58 @@ void Model::updateVegettiRegularization() {
 
 	// Build cloud; 
 	
-	PointCloud<double> cloud; 
-	 cloud.pts.resize(length); 
-	typedef KDTreeSingleIndexAdaptor<L2_Simple_Adaptor<double, PointCloud<double> > ,PointCloud<double>,3> my_kd_tree_t;
+	PointCloud<double> cloud;
+	cloud.pts.resize(length);
+    KDTreeAdaptor index(2, cloud, KDTreeSingleIndexAdaptorParams(20 ));
 	for(size_t j=0; j<length; ++j) {
-		cloud.pts[j].x = srcPosXListPixel[j]; 
-		cloud.pts[j].y = srcPosYListPixel[j]; 
-		cloud.pts[j].z = 0;
+		cloud.pts[j].x = srcPosXListPixel[j];
+		cloud.pts[j].y = srcPosYListPixel[j];
 	}
-	my_kd_tree_t  index(3, cloud, KDTreeSingleIndexAdaptorParams(20 ) );
-	index.buildIndex();	
+	index.buildIndex();
 
 
-	int indexRegion1 = -1; 
-	int indexRegion2 = -1; 
-	int indexRegion3 = -1; 
-	int indexRegion4 = -1; 
+	int indexRegion1 = -1;
+	int indexRegion2 = -1;
+	int indexRegion3 = -1;
+	int indexRegion4 = -1;
 
 
-	double counter = 0; 
-	if(0){
+	if(1){
 	for (int i=0; i<length; ++i) {
 		
-		double query_pt[3]; 
-		query_pt[0] = srcPosXListPixel[i]; 
-		query_pt[1] = srcPosYListPixel[i]; 
-		query_pt[2] = 0 ; 
+        double query_pt[2] = {srcPosXListPixel[i], srcPosYListPixel[i]};
 		const size_t num_results =10;
 		std::vector<size_t>   ret_index(num_results);
 		std::vector<double> out_dist_sqr(num_results);
 		index.knnSearch(&query_pt[0], num_results, &ret_index[0], &out_dist_sqr[0]);
+        double delta(1e-6);
 
-		indexRegion1 = -1; 
-		indexRegion2 = -1; 
-		indexRegion3 = -1; 
-		indexRegion4 = -1; 
-
+		indexRegion1 = -1;
+		indexRegion2 = -1;
+		indexRegion3 = -1;
+		indexRegion4 = -1;
 
 		for(int k=1; k<num_results; ++k) {
 
-			size_t j = ret_index[k] ; 
+			size_t j = ret_index[k] ;
 			//cout << i<< "\t" << j << "\t" << srcPosXListPixel[j] << "\t" << srcPosXListPixel[i] << "\t" << srcPosYListPixel[j] << "\t" << srcPosYListPixel[i] << endl; 
-			if( indexRegion1 == -1 and srcPosXListPixel[j] > srcPosXListPixel[i] and srcPosYListPixel[j] > srcPosYListPixel[i]    ) {   // in region1; 
-					indexRegion1 = j ;  
+			if( indexRegion1 == -1 and srcPosXListPixel[j] > srcPosXListPixel[i] + delta and srcPosYListPixel[j] > srcPosYListPixel[i]    ) {   // in region1; 
+					indexRegion1 = j ;
 			}
-			else if(indexRegion2 == -1 and srcPosXListPixel[j] < srcPosXListPixel[i] and srcPosYListPixel[j] > srcPosYListPixel[i]  ) { 
-					indexRegion2 = j ;  
+			else if(indexRegion2 == -1 and srcPosXListPixel[j] < srcPosXListPixel[i] - delta and srcPosYListPixel[j] > srcPosYListPixel[i]  ) {
+					indexRegion2 = j ;
 			}
-			else if(indexRegion3 == -1 and srcPosXListPixel[j] < srcPosXListPixel[i] and srcPosYListPixel[j] < srcPosYListPixel[i] ) {   // in region3; 
-					indexRegion3 = j ;  
+			else if(indexRegion3 == -1 and srcPosXListPixel[j] < srcPosXListPixel[i] - delta and srcPosYListPixel[j] < srcPosYListPixel[i] ) {   // in region3; 
+					indexRegion3 = j ;
 			}
-			else if(indexRegion4 == -1 and srcPosXListPixel[j] > srcPosXListPixel[i] and srcPosYListPixel[j] < srcPosYListPixel[i]  ) {   // in region4; 
-					indexRegion4 = j ;  
+			else if(indexRegion4 == -1 and srcPosXListPixel[j] > srcPosXListPixel[i] + delta and srcPosYListPixel[j] < srcPosYListPixel[i]  ) {   // in region4; 
+					indexRegion4 = j ;
 			}
 			else if(indexRegion1 != -1 and indexRegion2 != -1 and indexRegion3 != -1 and indexRegion4 != -1)
-				break; 
-			else
-				continue; 
-			
-
+				break;
 		}
-		indexRegion1 = ret_index[1]; 
-		indexRegion2 = ret_index[2]; 
-		indexRegion3 = ret_index[3]; 
-		indexRegion4 = ret_index[4]; 
-		
 
-		if (indexRegion1 > 0 and indexRegion2 > 0  and indexRegion3 > 0 and indexRegion4 > 0
-			and indexRegion1 != i and indexRegion2 != i  and indexRegion3 != i and indexRegion4 != i  )  {
-			counter += 1; 
+		if (indexRegion1 > 0 and indexRegion2 > 0  and indexRegion3 > 0 and indexRegion4 > 0) {
 			Point A(srcPosXList[indexRegion3 ], srcPosYList[indexRegion3 ], s(indexRegion3 ));
 			Point B(srcPosXList[indexRegion2 ], srcPosYList[indexRegion2 ], s(indexRegion2 ));
 			Point C(srcPosXList[i            ], srcPosYList[i            ], s(i            ));
@@ -597,13 +580,13 @@ void Model::updateVegettiRegularization() {
 			Hs2.insert(i, indexRegion2	) 	= w5[6];
 			Hs2.insert(i, i				) 	= w5[7];
 			Hs2.insert(i, indexRegion4	) 	= w5[8];
-			Hs2.insert(i, indexRegion1	) 	= w5[9]; 
+			Hs2.insert(i, indexRegion1	) 	= w5[9];
 		}
 	}
 	}
 	
 
-	if(1) {  // naive vegetti way to solve the problem; 
+	if(0) {  // naive vegetti way to solve the problem; 
 
 	for (int i=0; i<length; ++i) {
 		
@@ -644,7 +627,6 @@ void Model::updateVegettiRegularization() {
 
 			if (indexRegion1 > 0 and indexRegion2 > 0  and indexRegion3 > 0 and indexRegion4 > 0
 			and indexRegion1 != i and indexRegion2 != i  and indexRegion3 != i and indexRegion4 != i  )  {
-				counter+= 1; 
 			Point A(srcPosXList[indexRegion3 ], srcPosYList[indexRegion3 ], s(indexRegion3 ));
 			Point B(srcPosXList[indexRegion2 ], srcPosYList[indexRegion2 ], s(indexRegion2 ));
 			Point C(srcPosXList[i            ], srcPosYList[i            ], s(i            ));
@@ -669,7 +651,6 @@ void Model::updateVegettiRegularization() {
 
 	HtH = Hs1.transpose()*Hs1 + Hs2.transpose()*Hs2;
 
-	 
 }
 
 
@@ -700,16 +681,16 @@ void Model::updateCompactMatrix(Image* dataImage) {
 		for(int i=0; i<k; ++i) {
 			double xdiff = pre_centers[i].first - kmeans.centers[i].first; 
 			double ydiff = pre_centers[i].second -kmeans.centers[i].second; 
-			diff += (xdiff * xdiff + ydiff * ydiff );  
+			diff += (xdiff * xdiff + ydiff * ydiff );
 		}
 	}
 
 	// Now the centers are found; 
-	vector<int> countGroup  = kmeans.countGroup();   // countGroup.size() == k; 
+	vector<int> countGroup  = kmeans.countGroup();   // countGroup.size() == k;
 
 	// save group and cetners information; 
 	Kmeans_group = kmeans.group; 
-	Kmeans_centers = kmeans.centers; 
+	Kmeans_centers = kmeans.centers;
 
 	//getKmeansScatter(dataImage);   // Kmeans_group, Kmeans_center; 
 	for(int i=0; i<length; ++i) {
@@ -751,7 +732,7 @@ void Model::solveSource(sp_mat* invC, vec* d , string R_type) {
 
 	else if(R_type == "vege")  {
 		updateVegettiRegularization(); 
-		REG = HtH + beta * HcH ; 
+		REG = HtH + beta * HcH ;
 	}
 	else {
 		cout << "Regularization type is not supported yet!" << endl; 

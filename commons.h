@@ -45,7 +45,7 @@ struct PointCloud
 {
 	struct Point
 	{
-		T  x,y,z;
+		T  x,y;
 	};
 
 	vector<Point>  pts;
@@ -58,21 +58,19 @@ struct PointCloud
 	{
 		const T d0=p1[0]-pts[idx_p2].x;
 		const T d1=p1[1]-pts[idx_p2].y;
-		//const T d2=p1[2]-pts[idx_p2].z;
-		return d0*d0+d1*d1 ; 
+		return d0*d0+d1*d1 ;
 	}
 
 	inline T kdtree_get_pt(const size_t idx, int dim) const
 	{
 		if (dim==0) return pts[idx].x;
-		else if (dim==1) return pts[idx].y;
-		else return pts[idx].z;
+		else return pts[idx].y;
 	}
 	template <class BBOX>
 	bool kdtree_get_bbox(BBOX& /*bb*/) const { return false; }
 };
 
-
+typedef KDTreeSingleIndexAdaptor<L2_Simple_Adaptor<double, PointCloud<double> > ,PointCloud<double>,2> KDTreeAdaptor;
 
 
 
