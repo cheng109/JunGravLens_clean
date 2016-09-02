@@ -1772,8 +1772,9 @@ void Model::resetVectors(Conf* conf) {
 
 
 
-	vector<vector<normVec> > normV;
-	vector<normVec> meanNormV;
+	//vector<vector<normVec> > normV;
+    for (size_t i=0; i< normV.size(); ++i) normV[i].clear();
+	//vector<normVec> meanNormV;
 
 
 

@@ -24,7 +24,7 @@ using namespace std;
 Model *model;
 #pragma omp threadprivate(model)
 void mcFitGW(Conf* conf, MultModelParam param_old, vector<Image*> dataImageList, string dir, string outputFileName) {
-    size_t nLoops(conf->nLoops), lag(10), thin(15), writeChkpt(30), iter(0);
+    size_t nLoops(conf->nLoops), lag(10), thin(15), writeChkpt(10), iter(0);
     double lambdaS = conf->srcRegLevel;
     size_t nWalkers(conf->nWalkers);
     auto objective = std::bind(getLogProb, std::placeholders::_1, dataImageList[0], conf);
@@ -37,7 +37,6 @@ void mcFitGW(Conf* conf, MultModelParam param_old, vector<Image*> dataImageList,
 
     nLoops += iter;
     for (size_t loop=iter; loop<nLoops; ++loop) {
-        cout << loop << endl;
         #pragma omp parallel for
         for (size_t m=0; m<nWalkers; ++m) {
             mc.stretchMove(model,m);
@@ -84,13 +83,10 @@ double getLogProb(Model* model, Image* dataImage, Conf* conf) {
 
     //double chi2 = (res.cwiseProduct(dataImage->invSigma)).squaredNorm()*model->lambdaC* model->lambdaC;
     double lp = srcR[0] + chi2[0];
-    if (conf->verbose) {
+    if (conf->verbose || std::isnan(lp)) {
         cout << "Penalty " << chi2[0] << " " << srcR[0] << " " << s.norm() << " " << model->REG.norm() << " " << res.norm() << endl;
         cout << model->L.norm() << " " << dataImage->d.norm() << " " << dataImage->invC.norm() << endl;
-    }
-    if (std::isnan(lp)) {
-        cout << "Penalty NaN " << chi2[0] << " " << srcR[0] << endl;
-        return -1.0;
+        if (std::isnan(lp)) return -1.0;
     }
     return lp;
 
