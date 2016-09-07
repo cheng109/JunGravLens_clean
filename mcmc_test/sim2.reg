@@ -1,0 +1,5 @@
+# Region file format: DS9 version 4.1
+# Filename: sim2_image.fits
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+image
+polygon(120.05141,344.94859,211.94859,344.94859,273,349,354,325,413,276,422,184,398,109,356,46,302,16,209,6,127,37,68,65,29,120,13,192,21,236,164,190,165,152,175,111,196,92,215,78,276,80,305,94,325,133,337,176,312,235,297,246,277,260,220,282,196,275,164,249,162,200,157,198,28,238,32,247,36,283)

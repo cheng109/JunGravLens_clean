@@ -1,0 +1,65 @@
+## Setting primary parameters: 
+omega     0.300
+lambda	  0.70000
+weos	  -1.000000
+hubble	  0.7000
+srcZ	2.379
+lenZ	0.4457
+
+
+## Setting secondary parameters: 
+srcRes	0.04
+imgRes	0.04
+potRes	0.1
+causticLevel  4
+
+## Files
+imageFileName	mcmc_test/sim2_image.fits
+regionFileName	mcmc_test/sim2.reg
+varFileName	  jun_var.fits
+psfFileName		horseshoe_test/HorseShoe_psf.fits
+criticalName	mcmc_test/critical.reg
+causticName	    mcmc_test/caustic.reg
+#
+contourCritName  mcmc_test/ds9crit.con
+contourCausName  mcmc_test/ds9caus.con
+
+## Flags:	 '1' == Yes && '0' == No
+verbose         0
+usingRegion     1
+outputImages    0
+srcBackground   0
+
+srcRegLevel     2e-6
+srcRegType      vege
+
+## Source plane size (in pixel)
+srcX    400
+srcY    400
+
+numSources  1
+
+beta 1e3
+
+nLoops 300
+nWalkers 300
+seed 1111
+resume 0
+
+
+
+## Source plane size (in pixel)
+srcX	400
+srcY	400
+
+back_mean 69.9
+back_std 0.01
+
+
+## Model_PTMASS {xfrom, xto, xinc, yfrom, yto, yinc, critfrom, critto, critinc}
+## Model_SIE {xfrom, xto, xinc, yfrom, yto, yinc, critfrom, critto, critinc, ellfrom, ellto, ellinc, pafrom, pato, painc, corefrom, coreto, coreinc}
+##
+##
+SIE    -50.0  50.0 5.0 -50.0 50.0 5.0 3.5 5.5 0.5 0.05 0.6 0.05 90.0 270.0 10.0 0.0 0.0 0.002
+SIE -200.0  -100.0 5.0 -20.0 20.0 3.0 0.5 3.5 0.5 0.05 0.6 0.05 0.0 180.0 10.0 0.0 0.0 0.002
+
